@@ -8,6 +8,41 @@ from ast import literal_eval
 # Load world
 world = World()
 
+# Depth First Traversal
+def dft(starting_room):
+    # Create an empty stack and add the starting_room to the stack
+    s = []
+    s.append(starting_room)
+
+    # Create a Set to store visited rooms
+    visited = set()
+
+    # While the stack is not empty
+    while len(s) > 0:
+        # Pop last item from stack
+        cur_room = s.pop()
+
+        # If that room hasn't been visited...
+        if cur_room not in visited:
+            print(cur_room)
+            # Mark it as visited
+            visited.add(cur_room)
+
+            # get the exits of the current room
+            cur_room_exits = player.current_room.get_exits()
+            print(cur_room_exits)
+
+            traversal_path.append()
+            player.current_room.get_room_in_direction(n, s, e, or west)
+            # add the exits as connected rooms
+            # determine which rooms are through the n, s, e, w
+                # append the connected rooms to the stack
+            
+            # Then push all of its neighbors onto the stack
+            # for neighbor in get_neighbors(cur_room):
+            #     s.append(neighbor)
+        # If dead end, travel back
+            # add those instructions to traversal_path
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
@@ -29,7 +64,8 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
-
+# !call this depth traversal fxn to populate traversal_path
+dft(world.starting_room)
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
@@ -60,3 +96,12 @@ while True:
         break
     else:
         print("I did not understand that command.")
+
+
+'''
+- do I need to keep track of visited?
+    - yes, but I can't ignore them entirely as a person has to travel back a room to check for their neighbors when it is a dead end.
+- How does the n, w, e, w inputs play into the traversal?
+- How do I keep track of the path and convert those to instructions?
+- I need to keep track of the path to travel back up?
+'''
