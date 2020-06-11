@@ -32,15 +32,14 @@ def dft(starting_room):
             cur_room_exits = player.current_room.get_exits()
             print(cur_room_exits)
 
-            traversal_path.append()
-            player.current_room.get_room_in_direction(n, s, e, or west)
-            # add the exits as connected rooms
-            # determine which rooms are through the n, s, e, w
-                # append the connected rooms to the stack
-            
-            # Then push all of its neighbors onto the stack
-            # for neighbor in get_neighbors(cur_room):
-            #     s.append(neighbor)
+            # for every way the player can move
+            for cur_room_exit in cur_room_exits:
+                # get the room in that direction
+                connected_room = player.current_room.get_room_in_direction(cur_room_exit)
+                # add the connected room to the stack
+                s.append(connected_room)
+                # add the direction taken to traversal_path
+                traversal_path.append(cur_room_exit)
         # If dead end, travel back
             # add those instructions to traversal_path
 
