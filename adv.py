@@ -8,20 +8,47 @@ from ast import literal_eval
 # Load world
 world = World()
 
-# !Depth First Traversal
-def traverse_rooms(starting_room):
-    # Create an empty stack and add the starting_room to the stack
-    s = []
-    s.append(starting_room.id)
+# My own traversal graph; update when a room is newly visited
+visited = {}
 
-    # My own traversal graph; update when a room is newly visited
-    visited = {}
+#! Breadth First Search to find the path to the shortest unexplored room
+def bfs(starting_room):
+    print('bfs starting room:', visited)
+
+    # keep track of explored rooms
+    explored = []
+    # keep track of all the paths to be checked
+    queue = [[starting_room]]
+
+    # keeps looping until all possible paths have been checked
+    while queue:
+        # pop the first path from the queue
+        path = queue.pop(0)
+        # get the last room from the path
+        room = path[-1]
+
+        if room not in explored:
+            # Loop through the room exits
+            for rm_exit, connected_rm_id in visited[room].items():
+                # if one of the exits aren't visited
+                if connected_rm_id == '?':
+                    print('if')
+                    return path
+                # If an exit has been visited (not '?'), you can put it in the queue
+                else:
+                    print('else')
+                    new_path = list(path)
+                    new_path.append(connected_rm_id)
+                    queue.append(new_path)
+
+            # mark room as explored
+            explored.append(room)
+
+#! Depth First Traversal
+def traverse_rooms(starting_room):
 
     # get the current room ID
     room_id = player.current_room.id
-
-    # get the directions a player can move in the current room
-    cur_room_exits = player.current_room.get_exits()
 
     def add_visited():
         directions = {}
@@ -29,7 +56,6 @@ def traverse_rooms(starting_room):
         for room_exit in player.current_room.get_exits():
             directions.update({room_exit: '?'})
             visited.update({player.current_room.id: directions})
-        print('VISITED:', visited)
         
     add_visited()
 
@@ -54,71 +80,57 @@ def traverse_rooms(starting_room):
             return None
 
     #! Loop until there are exactly 500 entries in your graph and no '?' in the adjacency dictionaries.
-    # while len(visited) < 500 or get_ques('?'):
+    while len(visited) < 9 or get_ques('?'):
+        limit_reached = 0
+        num_connected_rms = len(visited[room_id])
 
-    # Loop through the room exits, and travel into the first '?'
-    for rm_exit, connected_rm_id in visited[room_id].items():
-        print('exit', rm_exit)
-        # if the exit is unvisited, has a '?'
-        if connected_rm_id == '?':
-            # have player travel to the room
-            player.travel(rm_exit)
-            # create a exit hash table for the new room
-            add_visited()
-            # visited.update({player.current_room.id: })
+        # Loop through the room exits, and travel into the first exit == '?'
+        for rm_exit, connected_rm_id in visited[room_id].items():
+            print('exit', rm_exit)
+            # if the exit is unvisited, has a '?'
+            if connected_rm_id == '?':
+                # have player travel to the room
+                player.travel(rm_exit)
+                # create a exit hash table for the new room
+                add_visited()
+                # update which room the exit connects to, replace '?'
+                visited[room_id].update({rm_exit: player.current_room.id})
+                # update the connected room's hash table, replace '?'
+                visited[player.current_room.id].update({opp_exit(rm_exit): room_id})
+                # update traversal_path
+                traversal_path.append(rm_exit)
+                # update room_id to the new room the player traveled to
+                room_id = player.current_room.id
+                print('visited:', visited)
+                break
+            # exit is not '?'
+            else:
+                limit_reached += 1
 
-            # update which room the exit connects to
-            visited[room_id].update({rm_exit: player.current_room.id})
-            # update the connected room's hash table
-            visited[player.current_room.id].update({opp_exit(rm_exit): room_id})
-            print('visited:', visited)
-            break
         # if all exits have been visited
-        else:
-            # return back the path you came from until you find an unvisited exit
-            pass
+        if num_connected_rms == limit_reached:
+            # returns a path that the player came from
+            path = bfs(player.current_room.id)
+            print('path:', path[1:])
+            for i in path[1:]:
+                for room_exit in player.current_room.get_exits():
+                    print('current room:', visited[player.current_room.id][room_exit], 'room_exit:', room_exit, i)
+                    if visited[player.current_room.id][room_exit] == i:
+                        print('room_exit:', room_exit)
+                        player.travel(room_exit)
+                        # update traversal_path
+                        traversal_path.append(room_exit)
+                        room_id = player.current_room.id
 
-
-        # # Pop last item from stack
-        # cur_room = s.pop()
-        
-        # player.travel(cur_room_exits[-1])
-        # # If room has no '?'
-
-        # # If that room hasn't been visited...
-        # if cur_room not in visited:
-        #     print('in room:', cur_room)
-        #     # Mark it as visited
-        #     visited.add(cur_room)
-
-        #     # get the exits of the current room
-        #     cur_room_exits = player.current_room.get_exits()
-        #     print(cur_room_exits)
-
-        #     # for every way the player can move
-        #     for cur_room_exit in cur_room_exits:
-        #         # get the room in that direction
-        #         connected_room = player.current_room.get_room_in_direction(cur_room_exit)
-        #         # add the connected room to the stack
-        #         print('appending:', connected_room)
-        #         s.append(connected_room)
-        #     # # add the direction taken to traversal_path
-        #     # traversal_path.append(cur_room_exit)
-        #     # move player
-        #     player.travel(cur_room_exits[-1])
-        #     print('travel:', cur_room_exits[-1])
-        # # If dead end, travel back
-        # else:
-        #     # add those instructions to traversal_path
-        #     pass
+        print('outside visited:', visited)
 
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-# map_file = "maps/test_cross.txt"
+map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-map_file = "maps/main_maze.txt"
+# map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -157,15 +169,15 @@ else:
 #######
 # UNCOMMENT TO WALK AROUND
 #######
-player.current_room.print_room_description(player)
-while True:
-    cmds = input("-> ").lower().split(" ")
-    if cmds[0] in ["n", "s", "e", "w"]:
-        player.travel(cmds[0], True)
-    elif cmds[0] == "q":
-        break
-    else:
-        print("I did not understand that command.")
+# player.current_room.print_room_description(player)
+# while True:
+#     cmds = input("-> ").lower().split(" ")
+#     if cmds[0] in ["n", "s", "e", "w"]:
+#         player.travel(cmds[0], True)
+#     elif cmds[0] == "q":
+#         break
+#     else:
+#         print("I did not understand that command.")
 
 
 '''
