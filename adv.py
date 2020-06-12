@@ -14,8 +14,23 @@ def dft(starting_room):
     s = []
     s.append(starting_room)
 
-    # Create a Set to store visited rooms
-    visited = set()
+    # My own traversal graph; update when a room is newly visited
+    visited = {}
+
+    # get the current room ID
+    room_id = player.current_room.id
+
+    # get the directions a player can move in the current room they're in
+    cur_room_exits = player.current_room.get_exits()
+
+    direction = {}
+    # get every cardinal direction a player can move from current room
+    for cur_room_exit in cur_room_exits:
+        direction.update({cur_room_exit: '?'})
+        visited.update({room_id: direction})
+        
+
+    print('VISITED:', visited)
 
     # While the stack is not empty
     while len(s) > 0:
@@ -26,7 +41,7 @@ def dft(starting_room):
         if cur_room not in visited:
             print('in room:', cur_room)
             # Mark it as visited
-            # visited.add(cur_room)
+            visited.add(cur_room)
 
             # get the exits of the current room
             cur_room_exits = player.current_room.get_exits()
@@ -39,12 +54,16 @@ def dft(starting_room):
                 # add the connected room to the stack
                 print('appending:', connected_room)
                 s.append(connected_room)
-                # add the direction taken to traversal_path
-                traversal_path.append(cur_room_exit)
+            # # add the direction taken to traversal_path
+            # traversal_path.append(cur_room_exit)
             # move player
             player.travel(cur_room_exits[-1])
+            print('travel:', cur_room_exits[-1])
         # If dead end, travel back
+        else:
             # add those instructions to traversal_path
+            pass
+
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
@@ -108,5 +127,8 @@ while True:
 - How do I keep track of the path and convert those to instructions?
 - I need to keep track of the path to travel back up?
 - where am i actually moving the player?
-- How do I move back when I reach a dead end.
+- How do I move back when I reach a dead end?
+- How do I know I reached a dead end?
+- I'm only appending rooms to the stack, but to travel I need to also save the direction
+    - https://youtu.be/V6Nv14Nf3qI?t=4348
 '''
