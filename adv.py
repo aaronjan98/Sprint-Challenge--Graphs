@@ -24,9 +24,9 @@ def dft(starting_room):
 
         # If that room hasn't been visited...
         if cur_room not in visited:
-            print(cur_room)
+            print('in room:', cur_room)
             # Mark it as visited
-            visited.add(cur_room)
+            # visited.add(cur_room)
 
             # get the exits of the current room
             cur_room_exits = player.current_room.get_exits()
@@ -37,9 +37,12 @@ def dft(starting_room):
                 # get the room in that direction
                 connected_room = player.current_room.get_room_in_direction(cur_room_exit)
                 # add the connected room to the stack
+                print('appending:', connected_room)
                 s.append(connected_room)
                 # add the direction taken to traversal_path
                 traversal_path.append(cur_room_exit)
+            # move player
+            player.travel(cur_room_exits[-1])
         # If dead end, travel back
             # add those instructions to traversal_path
 
@@ -65,6 +68,7 @@ traversal_path = []
 
 # !call this depth traversal fxn to populate traversal_path
 dft(world.starting_room)
+print('traversal_path', traversal_path)
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
@@ -103,4 +107,6 @@ while True:
 - How does the n, w, e, w inputs play into the traversal?
 - How do I keep track of the path and convert those to instructions?
 - I need to keep track of the path to travel back up?
+- where am i actually moving the player?
+- How do I move back when I reach a dead end.
 '''
