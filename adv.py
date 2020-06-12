@@ -8,11 +8,11 @@ from ast import literal_eval
 # Load world
 world = World()
 
-# Depth First Traversal
-def dft(starting_room):
+# !Depth First Traversal
+def traverse_rooms(starting_room):
     # Create an empty stack and add the starting_room to the stack
     s = []
-    s.append(starting_room)
+    s.append(starting_room.id)
 
     # My own traversal graph; update when a room is newly visited
     visited = {}
@@ -20,49 +20,97 @@ def dft(starting_room):
     # get the current room ID
     room_id = player.current_room.id
 
-    # get the directions a player can move in the current room they're in
+    # get the directions a player can move in the current room
     cur_room_exits = player.current_room.get_exits()
 
-    direction = {}
-    # get every cardinal direction a player can move from current room
-    for cur_room_exit in cur_room_exits:
-        direction.update({cur_room_exit: '?'})
-        visited.update({room_id: direction})
+    def add_visited():
+        directions = {}
+        # get every cardinal direction a player can move from current room
+        for room_exit in player.current_room.get_exits():
+            directions.update({room_exit: '?'})
+            visited.update({player.current_room.id: directions})
+        print('VISITED:', visited)
         
+    add_visited()
 
-    print('VISITED:', visited)
-
-    # While the stack is not empty
-    while len(s) > 0:
-        # Pop last item from stack
-        cur_room = s.pop()
-
-        # If that room hasn't been visited...
-        if cur_room not in visited:
-            print('in room:', cur_room)
-            # Mark it as visited
-            visited.add(cur_room)
-
-            # get the exits of the current room
-            cur_room_exits = player.current_room.get_exits()
-            print(cur_room_exits)
-
-            # for every way the player can move
-            for cur_room_exit in cur_room_exits:
-                # get the room in that direction
-                connected_room = player.current_room.get_room_in_direction(cur_room_exit)
-                # add the connected room to the stack
-                print('appending:', connected_room)
-                s.append(connected_room)
-            # # add the direction taken to traversal_path
-            # traversal_path.append(cur_room_exit)
-            # move player
-            player.travel(cur_room_exits[-1])
-            print('travel:', cur_room_exits[-1])
-        # If dead end, travel back
+    # function returns whether a '?' is in the rooms
+    def get_ques(val): 
+        for directions in visited.values():
+            for dir_rm in directions.values():
+                if val == dir_rm:
+                    return True
+        return False
+    
+    def opp_exit(direction):
+        if direction == 'n':
+            return 's'
+        elif direction == 's':
+            return 'n'
+        elif direction == 'e':
+            return 'w'
+        elif direction == 'w':
+            return 'e'
         else:
-            # add those instructions to traversal_path
+            return None
+
+    #! Loop until there are exactly 500 entries in your graph and no '?' in the adjacency dictionaries.
+    # while len(visited) < 500 or get_ques('?'):
+
+    # Loop through the room exits, and travel into the first '?'
+    for rm_exit, connected_rm_id in visited[room_id].items():
+        print('exit', rm_exit)
+        # if the exit is unvisited, has a '?'
+        if connected_rm_id == '?':
+            # have player travel to the room
+            player.travel(rm_exit)
+            # create a exit hash table for the new room
+            add_visited()
+            # visited.update({player.current_room.id: })
+
+            # update which room the exit connects to
+            visited[room_id].update({rm_exit: player.current_room.id})
+            # update the connected room's hash table
+            visited[player.current_room.id].update({opp_exit(rm_exit): room_id})
+            print('visited:', visited)
+            break
+        # if all exits have been visited
+        else:
+            # return back the path you came from until you find an unvisited exit
             pass
+
+
+        # # Pop last item from stack
+        # cur_room = s.pop()
+        
+        # player.travel(cur_room_exits[-1])
+        # # If room has no '?'
+
+        # # If that room hasn't been visited...
+        # if cur_room not in visited:
+        #     print('in room:', cur_room)
+        #     # Mark it as visited
+        #     visited.add(cur_room)
+
+        #     # get the exits of the current room
+        #     cur_room_exits = player.current_room.get_exits()
+        #     print(cur_room_exits)
+
+        #     # for every way the player can move
+        #     for cur_room_exit in cur_room_exits:
+        #         # get the room in that direction
+        #         connected_room = player.current_room.get_room_in_direction(cur_room_exit)
+        #         # add the connected room to the stack
+        #         print('appending:', connected_room)
+        #         s.append(connected_room)
+        #     # # add the direction taken to traversal_path
+        #     # traversal_path.append(cur_room_exit)
+        #     # move player
+        #     player.travel(cur_room_exits[-1])
+        #     print('travel:', cur_room_exits[-1])
+        # # If dead end, travel back
+        # else:
+        #     # add those instructions to traversal_path
+        #     pass
 
 
 # You may uncomment the smaller graphs for development and testing purposes.
@@ -85,8 +133,8 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
-# !call this depth traversal fxn to populate traversal_path
-dft(world.starting_room)
+#! call this depth traversal fxn to populate traversal_path
+traverse_rooms(world.starting_room)
 print('traversal_path', traversal_path)
 
 # TRAVERSAL TEST - DO NOT MODIFY
