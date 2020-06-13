@@ -113,11 +113,14 @@ def traverse_rooms(starting_room):
             
             for i in path:
                 for room_exit in player.current_room.get_exits():
-                    if visited[player.current_room.id][room_exit] == i:
-                        player.travel(room_exit)
-                        # update traversal_path
-                        traversal_path.append(room_exit)
-                        room_id = player.current_room.id
+                    try:
+                        if visited[player.current_room.id][room_exit] == i:
+                            player.travel(room_exit)
+                            # update traversal_path
+                            traversal_path.append(room_exit)
+                            room_id = player.current_room.id
+                    except KeyError:
+                        pass
 
 graph_entries = 500
 
