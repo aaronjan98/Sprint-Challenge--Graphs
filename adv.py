@@ -29,7 +29,7 @@ def bfs(starting_room):
 
         if room not in explored:
             # Loop through the room exits
-            for rm_exit, connected_rm_id in visited[room].items():
+            for connected_rm_id in visited[room].values():
                 # if one of the exits aren't visited
                 if connected_rm_id == '?':
                     print('if')
@@ -80,7 +80,7 @@ def traverse_rooms(starting_room):
             return None
 
     #! Loop until there are exactly 500 entries in your graph and no '?' in the adjacency dictionaries.
-    while len(visited) < 9 or get_ques('?'):
+    while len(visited) < graph_entries or get_ques('?'):
         limit_reached = 0
         num_connected_rms = len(visited[room_id])
 
@@ -91,8 +91,9 @@ def traverse_rooms(starting_room):
             if connected_rm_id == '?':
                 # have player travel to the room
                 player.travel(rm_exit)
-                # create a exit hash table for the new room
-                add_visited()
+                # create a exit hash table for the new room ONLY if it doesn't exist already
+                if room_id not in visited.keys():
+                    add_visited()
                 # update which room the exit connects to, replace '?'
                 visited[room_id].update({rm_exit: player.current_room.id})
                 # update the connected room's hash table, replace '?'
@@ -111,24 +112,22 @@ def traverse_rooms(starting_room):
         if num_connected_rms == limit_reached:
             # returns a path that the player came from
             path = bfs(player.current_room.id)
-            print('path:', path[1:])
-            for i in path[1:]:
+            print('path:', path)
+            for i in path:
                 for room_exit in player.current_room.get_exits():
-                    print('current room:', visited[player.current_room.id][room_exit], 'room_exit:', room_exit, i)
                     if visited[player.current_room.id][room_exit] == i:
-                        print('room_exit:', room_exit)
+                        print('current room:', visited[player.current_room.id][room_exit], i)
                         player.travel(room_exit)
                         # update traversal_path
                         traversal_path.append(room_exit)
                         room_id = player.current_room.id
 
-        print('outside visited:', visited)
-
+graph_entries = 12
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
-map_file = "maps/test_cross.txt"
-# map_file = "maps/test_loop.txt"
+# map_file = "maps/test_cross.txt"
+map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
 # map_file = "maps/main_maze.txt"
 
@@ -178,17 +177,3 @@ else:
 #         break
 #     else:
 #         print("I did not understand that command.")
-
-
-'''
-- do I need to keep track of visited?
-    - yes, but I can't ignore them entirely as a person has to travel back a room to check for their neighbors when it is a dead end.
-- How does the n, w, e, w inputs play into the traversal?
-- How do I keep track of the path and convert those to instructions?
-- I need to keep track of the path to travel back up?
-- where am i actually moving the player?
-- How do I move back when I reach a dead end?
-- How do I know I reached a dead end?
-- I'm only appending rooms to the stack, but to travel I need to also save the direction
-    - https://youtu.be/V6Nv14Nf3qI?t=4348
-'''
