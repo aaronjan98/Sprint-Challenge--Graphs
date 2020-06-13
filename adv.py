@@ -13,7 +13,6 @@ visited = {}
 
 #! Breadth First Search to find the path to the shortest unexplored room
 def bfs(starting_room):
-    print('bfs starting room:', visited)
 
     # keep track of explored rooms
     explored = []
@@ -32,11 +31,9 @@ def bfs(starting_room):
             for connected_rm_id in visited[room].values():
                 # if one of the exits aren't visited
                 if connected_rm_id == '?':
-                    print('if')
                     return path
                 # If an exit has been visited (not '?'), you can put it in the queue
                 else:
-                    print('else')
                     new_path = list(path)
                     new_path.append(connected_rm_id)
                     queue.append(new_path)
@@ -86,14 +83,16 @@ def traverse_rooms(starting_room):
 
         # Loop through the room exits, and travel into the first exit == '?'
         for rm_exit, connected_rm_id in visited[room_id].items():
-            print('exit', rm_exit)
             # if the exit is unvisited, has a '?'
             if connected_rm_id == '?':
                 # have player travel to the room
                 player.travel(rm_exit)
                 # create a exit hash table for the new room ONLY if it doesn't exist already
-                if room_id not in visited.keys():
+                try:
+                    visited[player.current_room.id]
+                except KeyError:
                     add_visited()
+
                 # update which room the exit connects to, replace '?'
                 visited[room_id].update({rm_exit: player.current_room.id})
                 # update the connected room's hash table, replace '?'
@@ -102,7 +101,6 @@ def traverse_rooms(starting_room):
                 traversal_path.append(rm_exit)
                 # update room_id to the new room the player traveled to
                 room_id = player.current_room.id
-                print('visited:', visited)
                 break
             # exit is not '?'
             else:
@@ -112,24 +110,23 @@ def traverse_rooms(starting_room):
         if num_connected_rms == limit_reached:
             # returns a path that the player came from
             path = bfs(player.current_room.id)
-            print('path:', path)
+            
             for i in path:
                 for room_exit in player.current_room.get_exits():
                     if visited[player.current_room.id][room_exit] == i:
-                        print('current room:', visited[player.current_room.id][room_exit], i)
                         player.travel(room_exit)
                         # update traversal_path
                         traversal_path.append(room_exit)
                         room_id = player.current_room.id
 
-graph_entries = 12
+graph_entries = 500
 
 # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
-map_file = "maps/test_loop.txt"
+# map_file = "maps/test_loop.txt"
 # map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+map_file = "maps/main_maze.txt"
 
 # Loads the map into a dictionary
 room_graph=literal_eval(open(map_file, "r").read())
@@ -146,7 +143,6 @@ traversal_path = []
 
 #! call this depth traversal fxn to populate traversal_path
 traverse_rooms(world.starting_room)
-print('traversal_path', traversal_path)
 
 # TRAVERSAL TEST - DO NOT MODIFY
 visited_rooms = set()
